@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'analysis_loading_page.dart';
+import 'camera_screen.dart';
+import '../examples/ocr_demo.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,15 +19,24 @@ class _HomePageState extends State<HomePage> {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage(bool isProductA, ImageSource source) async {
-    final XFile? image = await _picker.pickImage(source: source);
-    if (image != null) {
-      setState(() {
-        if (isProductA) {
-          _productA = File(image.path);
-        } else {
-          _productB = File(image.path);
-        }
-      });
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        imageQuality: 100, // Maximum quality
+      );
+      
+      if (image != null) {
+        setState(() {
+          if (isProductA) {
+            _productA = File(image.path);
+          } else {
+            _productB = File(image.path);
+          }
+        });
+      }
+    } catch (e) {
+      print('[ERROR] Failed to pick image: $e');
+      // Show error dialog if needed
     }
   }
 
@@ -50,6 +61,17 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               onPressed: _canCompare ? _onCompare : null,
               child: const Text('Compare'),
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OCRDemoPage()),
+                );
+              },
+              icon: const Icon(Icons.text_fields),
+              label: const Text('OCR Demo'),
             ),
           ],
         ),
